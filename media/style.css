@@ -72,13 +72,14 @@ h1.title {
 h3.title {
     font-style: italic;
     color: #666;
-    margin-left: 260px;
+    margin-left: 220px;
     margin-bottom: 0px;
 }
 
 h5.title {
     font-style: italic;
-    margin-left: 360px;
+    margin-left: 315px;
+    margin-bottom: 0px;
 }
 
 p.links {
