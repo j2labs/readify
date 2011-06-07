@@ -8,8 +8,4 @@ py-bcrypt==0.2
 pymongo==1.10.1
 python-dateutil==2.0
 brubeck==0.2.7
-#
-# I'm not sure how to install pyzmq with mac ports flags for GCC
-# so install pyzmq by hand.
-#
-#-e git+git://github.com/zeromq/pyzmq.git@v2.0.10#egg=pyzmq
+pyzmq==2.1.7
