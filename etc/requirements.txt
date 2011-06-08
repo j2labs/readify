@@ -7,5 +7,5 @@ greenlet==0.3.1
 py-bcrypt==0.2
 pymongo==1.10.1
 python-dateutil==2.0
-brubeck==0.2.7
+brubeck==0.3.0
 pyzmq==2.1.7
