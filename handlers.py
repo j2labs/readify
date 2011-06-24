@@ -9,11 +9,13 @@ from brubeck.auth import web_authenticated, UserHandlingMixin
 from brubeck.request_handling import WebMessageHandler
 from brubeck.templating import Jinja2Rendering
 
+
 from models import ListItem
 from queries import (load_user,
                      save_user,
                      load_listitems,
                      save_listitem)
+from timekeeping import millis_to_datetime, prettydate
 
 
 ###
@@ -144,8 +146,19 @@ class ListDisplayHandler(BaseHandler, Jinja2Rendering):
         """
         items_qs = load_listitems(self.db_conn, self.current_user._id)
         items_qs.sort('updated_at', direction=pymongo.DESCENDING)
-        
-        items = [(i['updated_at'], i['url']) for i in items_qs]
+
+        items = []
+        for i in items_qs:
+            updated = millis_to_datetime(i['updated_at'])
+            formatted_date = prettydate(updated)
+            item = {
+                'formatted_date': formatted_date,
+                'url': i.get('url', None),
+                'title': i.get('title', None),
+                'tags': i.get('tags', None),
+            }
+            items.append(item)
+
         context = {
             'links': items,
         }
@@ -159,33 +172,49 @@ class ListAddHandler(BaseHandler, Jinja2Rendering):
     def get(self):
         """Renders a template with our links listed
         """
-        url = self.get_argument('u')
+        url = self.get_argument('url')
+        title = self.get_argument('title')
         context = {}
         if url is not None:
             context['url'] = url
+        if title is not None:
+            context['title'] = title
         return self.render_template('linklists/item_add.html', **context)
 
     @web_authenticated
     def post(self):
         """Accepts a URL argument and saves it to the database
         """
+        title = self.get_argument('title')
         url = self.get_argument('url')
+        tags = self.get_argument('tags')
 
         if not url.startswith('http'):
             url = 'http://%s' % (url)
-            
+
         link_item = {
             'owner': self.current_user._id,
             'username': self.current_user.username,
             'created_at': self.current_time,
             'updated_at': self.current_time,
+
+            'title': title,
             'url': url,
         }
 
-        item = ListItem(**link_item)
-        item.validate()
-        save_listitem(self.db_conn, item)
+        if tags:
+            tag_list = tags.split(',')
+            link_item['tags'] = tag_list
             
+        item = ListItem(**link_item)
+        try:
+            item.validate()
+        except Exception, e:
+            logging.error('Item validatiom failed')
+            logging.error(e)
+            return self.render_error(500)
+        
+        save_listitem(self.db_conn, item)
         return self.redirect('/')
 
 

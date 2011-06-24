@@ -4,7 +4,8 @@ from dictshield.fields import (StringField,
                                BooleanField,
                                URLField,
                                EmailField,
-                               LongField)
+                               LongField,
+                               ListField)
 # this might get moved
 from dictshield.fields import ObjectIdField
 
@@ -55,11 +56,17 @@ class ListItem(Document):
     created_at = MillisecondField()
     updated_at = MillisecondField()
 
-    url = URLField()
+    # status fields
+    deleted = BooleanField()
+    archived = BooleanField()
+
+    url = URLField(required=True)
+    title = StringField(required=True)
+    tags = ListField(StringField())
 
     _private_fields = [
         'owner',
     ]
-
+   
     def __unicode__(self):
         return u'%s' % (self.url)

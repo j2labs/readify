@@ -1,4 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Error{% endblock %}
-{% block base_body %}Drat! An error {{ error_code }} has occurred.{% endblock %}
+{% block title %}: Error {{ error_code }}{% endblock %}
+{% block base_body %}
+<div class="center"><img src="media/error.jpg"/></div>
+<p class="center">Drat! Something broke...</p>
+{% endblock %}
 

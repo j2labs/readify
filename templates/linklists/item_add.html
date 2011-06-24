@@ -1,18 +1,32 @@
 {% extends "site_base.html" %}
+
+{% block page_title %}Submit Link{% endblock %}
+
 {% block site_body %}
 
-<div id="login_fields">
+<div id="submit_link_fields">
   <form action="/add_item" method="post">
-    <table class="forms">
-      <tr><td>URL</td><td><input type="text" name="url" value="{{ url }}" /></td></tr>
-      <tr><td class="buttons"><input type="submit" /></td></tr>
-    </table>
+    <div class="forms">
+      <div class="forms_row">
+        <label class="form_label">Title</label>
+        <input class="form_value" type="text" name="title" value="{{ title }}" />
+      </div>
+      <div class="forms_row">
+        <label class="form_label">URL</label>
+        <input class="form_value" type="text" name="url" value="{{ url }}" />
+      </div>
+      <div class="forms_row">
+        <label class="form_label">Tags</label>
+        <input class="form_value" type="text" name="tags" value="{{ tags }}" />
+      </div>
+      <input type="submit" />
+    </div>
   </form>
 </div>
 
 <div><hr></div>
 
-<p class="center">Submit links with this bookmarklet: <a href="javascript:window.location=%22http://readify.j2labs.net/add_item?u=%22+encodeURIComponent(document.location)+%22&t=%22+encodeURIComponent(document.title)">Surf Later</a></p>
+<p class="center">Submit links with this bookmarklet: <a href="javascript:window.location=%22http://10.0.1.2:6767/add_item?url=%22+encodeURIComponent(document.location)+%22&title=%22+encodeURIComponent(document.title)">Readification</a></p>
 
 <pre><code></code></pre>
 

@@ -1,16 +1,20 @@
 <html>
   <head>
-    <title>{% block title %}{% endblock %}</title>
+    <title>Readify{% block title %}{% endblock %}</title>
     <link rel=stylesheet type=text/css href="../media/style.css"> 
-    <meta name="viewport" content="width=600;" /> 
+    <meta name="viewport" content="width=850" /> 
   </head>
 
   <body>
-    <h1 class="title">Readify</h1>
-    <h3 class="title">...a linked list server</h3>
-    <h5 class="title">by J2 Labs!</h3>
+    <div id="page_header">
+      {% block navigation %}{% endblock %}
+      <h1 class="title">Readify</h1>
+      <h3 class="title">...a linked list server</h3>
+    </div>
 
-    {% block base_body %}{% endblock %}
+    <div class="content_box">
+      {% block base_body %}{% endblock %}
+    </div>
 
   </body>
 </html>
