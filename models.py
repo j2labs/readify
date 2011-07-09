@@ -16,6 +16,11 @@ from timekeeping import MillisecondField
 ### Social Models
 ###
 
+from brubeck.models import User
+from brubeck.models import UserProfile
+
+
+
 class UserProfile(Document):
     """A UserProfile is essentially any publicly available info about the user.
     Stored in a document separate from the User itself for security.

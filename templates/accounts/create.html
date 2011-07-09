@@ -4,20 +4,7 @@
 <div id="account_create_fields">
   <form action="/create" method="post">
     <div class="forms">
-
-      <div class="forms_row">
-        <label class="form_label">Username</label>
-        <input class="form_value" type="text" name="username" value="{{ username }}"/>
-      </div>
-      <div class="forms_row">
-        <label class="form_label">Password</label>
-        <input class="form_value" type="password" name="password" value="{{ password }}"/>
-      </div>
-      <div class="forms_row">
-        <label class="form_label">Email</label>
-        <input class="form_value" type="text" name="email" value="{{ email }}"/>
-      </div>
-
+      {{ form_fields }}
       <div class="buttons"><input type="submit" /></div>
     </div>
   </form>

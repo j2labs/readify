@@ -1,5 +1,6 @@
 import sys
 import time
+import datetime
 import logging
 import pymongo
 import json
@@ -9,13 +10,15 @@ from brubeck.auth import web_authenticated, UserHandlingMixin
 from brubeck.request_handling import WebMessageHandler
 from brubeck.templating import Jinja2Rendering
 
-
 from models import ListItem
 from queries import (load_user,
                      save_user,
                      load_listitems,
                      save_listitem)
 from timekeeping import millis_to_datetime, prettydate
+from forms import gen_user_form
+
+import copy
 
 
 ###
@@ -72,10 +75,14 @@ class BaseHandler(WebMessageHandler, UserHandlingMixin):
 ###
 
 class AccountCreateHandler(BaseHandler, Jinja2Rendering):
+    skip_fields = ['date_joined', 'last_login']
+    
     def get(self):
         """Offers login form to user
         """
-        return self.render_template('accounts/create.html')
+        form_fields = gen_user_form(skip_fields=self.skip_fields)
+        return self.render_template('accounts/create.html',
+                                    form_fields=form_fields)
     
     def post(self):
         """Attempts to create an account with the credentials provided in the
@@ -97,7 +104,11 @@ class AccountCreateHandler(BaseHandler, Jinja2Rendering):
         except Exception, e:
             logging.error('Credentials failed')
             logging.error(e)
-            return self.render_template('accounts/create.html')
+            form_fields = gen_user_form(skip_fields=self.skip_fields,
+                                        values={'username': username,
+                                                'email': email})
+            return self.render_template('accounts/create.html',
+                                        form_fields=form_fields)
 
         logging.debug('User <%s> created' % (username))
         self.set_cookie('user_id', username,
@@ -110,15 +121,24 @@ class AccountLoginHandler(BaseHandler, Jinja2Rendering):
     def get(self):
         """Offers login form to user
         """
-        return self.render_template('accounts/login.html')
+        skip_fields=['email', 'date_joined', 'last_login']
+        form_fields = gen_user_form(skip_fields=skip_fields)
+        return self.render_template('accounts/login.html',
+                                    form_fields=form_fields)
     
     @web_authenticated
     def post(self):
         """Checks credentials with decorator and sends user authenticated
         users to the landing page.
         """
+        # Set the cookie to expire in five years
+        five_years = datetime.timedelta(days=(5 * 365.25))
+        expiration = datetime.datetime.utcnow() + five_years
+        expires = expiration.strftime("%a, %d-%b-%Y %H:%M:%S UTC")
+        
         self.set_cookie('user_id', self.current_user.username,
-                        secret=self.application.cookie_secret)
+                        secret=self.application.cookie_secret,
+                        expires=expires)
         
         return self.redirect('/')
 
