@@ -1,11 +1,13 @@
 import copy
 from dictshield.forms import Form
 
-from models import User
+from models import (User,
+                    UserProfile,
+                    ListItem)
 
 
 ###
-### Form Structures
+### HTML Mappings
 ###
 
 style_dict = {
@@ -15,10 +17,9 @@ style_dict = {
 }
 
 
-### Make some adjustments to Brubeck `User` model
-def gen_user_form(**kwargs):
-    """A function that handles the details of generating a Form around `User`
-    documents.
+def gen_doc_as_div(model, private_fields=None, **kwargs):
+    """A function that handles the details of generating a Form around some
+    document model.
     """
     # Use `style_dict` as basis for new forms
     as_div_args = copy.copy(style_dict)
@@ -27,8 +28,34 @@ def gen_user_form(**kwargs):
     for kword,value in kwargs.items():
         as_div_args[kword] = value
 
-    
-    f = Form(User, blacklist=['is_active'])
+    f = Form(model, private_fields=private_fields)
 
     return f.as_div(**as_div_args)
+
+
+###
+### User Forms
+###
+
+def user_form(**kwargs):
+    """A function that handles the details of generating a Form around `User`
+    documents.
+    """
+    return gen_doc_as_div(User, private_fields=['is_active'], **kwargs)
+
+
+def userprofile_form(**kwargs):
+    """A function that handles the details of generating a Form around `User`
+    documents.
+    """
+    return gen_doc_as_div(UserProfile, **kwargs)
+
+###
+### ListItem Forms
+###
+
+def listitem_form(**kwargs):
+    """Listitem forms! Party time! Excellent!
+    """
+    return gen_doc_as_div(ListItem, **kwargs)
 

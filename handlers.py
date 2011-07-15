@@ -4,25 +4,30 @@ import datetime
 import logging
 import pymongo
 import json
+import copy
+from hashlib import md5
 
-from brubeck.models import User
+from brubeck.models import User, UserProfile
 from brubeck.auth import web_authenticated, UserHandlingMixin
 from brubeck.request_handling import WebMessageHandler
 from brubeck.templating import Jinja2Rendering
+from brubeck.timekeeping import millis_to_datetime, prettydate
 
 from models import ListItem
 from queries import (load_user,
                      save_user,
                      load_listitems,
-                     save_listitem)
-from timekeeping import millis_to_datetime, prettydate
-from forms import gen_user_form
-
-import copy
+                     save_listitem,
+                     update_listitem,
+                     load_userprofile,
+                     save_userprofile)
+from forms import (user_form,
+                   userprofile_form,
+                   listitem_form)
 
 
 ###
-### Authentication
+### Handler Infrastructure
 ###
 
 class BaseHandler(WebMessageHandler, UserHandlingMixin):
@@ -69,6 +74,26 @@ class BaseHandler(WebMessageHandler, UserHandlingMixin):
 
         return user
 
+    def get_current_userprofile(self):
+        """Attempts to load the userprofile associated with `self.current_user`.
+        If no profile is found it prepares a blank one.
+        """
+        userprofile_dict = load_userprofile(self.db_conn,
+                                            uid=self.current_user.id)
+
+        if userprofile_dict:
+            userprofile = UserProfile(**userprofile_dict)
+        else:
+            up_dict = {
+                'owner': self.current_user.id,
+                'username': self.current_user.username,
+                'created_at': self.current_time,
+                'updated_at': self.current_time,
+            }
+            userprofile = UserProfile(**up_dict)
+
+        return userprofile
+
 
 ###
 ### Account Handlers
@@ -80,7 +105,7 @@ class AccountCreateHandler(BaseHandler, Jinja2Rendering):
     def get(self):
         """Offers login form to user
         """
-        form_fields = gen_user_form(skip_fields=self.skip_fields)
+        form_fields = user_form(skip_fields=self.skip_fields)
         return self.render_template('accounts/create.html',
                                     form_fields=form_fields)
     
@@ -104,9 +129,9 @@ class AccountCreateHandler(BaseHandler, Jinja2Rendering):
         except Exception, e:
             logging.error('Credentials failed')
             logging.error(e)
-            form_fields = gen_user_form(skip_fields=self.skip_fields,
-                                        values={'username': username,
-                                                'email': email})
+            form_fields = user_form(skip_fields=self.skip_fields,
+                                    values={'username': username,
+                                            'email': email})
             return self.render_template('accounts/create.html',
                                         form_fields=form_fields)
 
@@ -122,7 +147,7 @@ class AccountLoginHandler(BaseHandler, Jinja2Rendering):
         """Offers login form to user
         """
         skip_fields=['email', 'date_joined', 'last_login']
-        form_fields = gen_user_form(skip_fields=skip_fields)
+        form_fields = user_form(skip_fields=skip_fields)
         return self.render_template('accounts/login.html',
                                     form_fields=form_fields)
     
@@ -152,31 +177,55 @@ class AccountLogoutHandler(BaseHandler, Jinja2Rendering):
 
 
 ###
-### Application Handlers
+### Link List Handlers
 ###
-
-### Web Handlers
 
 class ListDisplayHandler(BaseHandler, Jinja2Rendering):
     """A link listserv (what?!)
     """
+    def _handle_updates(self):
+        """Accepts a URL argument and saves it to the database
+        """
+        archive = self.get_argument('archive', None)
+        unarchive = self.get_argument('unarchive', None)
+        like = self.get_argument('like', None)
+        unlike = self.get_argument('unlike', None)
+        delete = self.get_argument('delete', None)
+        undelete = self.get_argument('undelete', None)
+
+        # Simple closure to simplify updating code
+        def updater(item_id, **kw):
+            print 'KW:', kw
+            update_listitem(self.db_conn, self.current_user.id, item_id, **kw)
+
+        # This could def be cleaner
+        if archive: updater(archive, archived=True)
+        elif unarchive: updater(unarchive, archived=False)
+        elif like: updater(like, liked=True)
+        elif unlike: updater(unlike, liked=False)
+        elif delete: updater(delete, deleted=True)
+        elif undelete: updater(undelete, deleted=False)
+
+
     @web_authenticated
     def get(self):
-        """Renders a template with our links listed
         """
-        items_qs = load_listitems(self.db_conn, self.current_user._id)
+        """
+        self._handle_updates()
+
+        items_qs = load_listitems(self.db_conn, owner=self.current_user.id)
         items_qs.sort('updated_at', direction=pymongo.DESCENDING)
 
         items = []
         for i in items_qs:
-            updated = millis_to_datetime(i['updated_at'])
+            item_id = i['_id']
+            item = ListItem.make_ownersafe(i)
+            
+            updated = millis_to_datetime(item['updated_at'])
             formatted_date = prettydate(updated)
-            item = {
-                'formatted_date': formatted_date,
-                'url': i.get('url', None),
-                'title': i.get('title', None),
-                'tags': i.get('tags', None),
-            }
+            item['formatted_date'] = formatted_date
+
+            item['id'] = item_id
             items.append(item)
 
         context = {
@@ -186,20 +235,26 @@ class ListDisplayHandler(BaseHandler, Jinja2Rendering):
 
 
 class ListAddHandler(BaseHandler, Jinja2Rendering):
-    """A link listserv (what?!)
+    """
     """
     @web_authenticated
     def get(self):
         """Renders a template with our links listed
         """
+        # Check for data to autopopulate fields with
+        values = {}
         url = self.get_argument('url')
         title = self.get_argument('title')
-        context = {}
+        
         if url is not None:
-            context['url'] = url
+            values['url'] = url
         if title is not None:
-            context['title'] = title
-        return self.render_template('linklists/item_add.html', **context)
+            values['title'] = title
+
+        skip_fields = ['deleted', 'archived', 'created_at', 'updated_at']
+        form_fields = listitem_form(skip_fields=skip_fields, values=values)
+        return self.render_template('linklists/item_add.html',
+                                    form_fields=form_fields)
 
     @web_authenticated
     def post(self):
@@ -213,7 +268,7 @@ class ListAddHandler(BaseHandler, Jinja2Rendering):
             url = 'http://%s' % (url)
 
         link_item = {
-            'owner': self.current_user._id,
+            'owner': self.current_user.id,
             'username': self.current_user.username,
             'created_at': self.current_time,
             'updated_at': self.current_time,
@@ -238,16 +293,14 @@ class ListAddHandler(BaseHandler, Jinja2Rendering):
         return self.redirect('/')
 
 
-### API Handler
-
 class APIListDisplayHandler(BaseHandler):
-    """A link listserv (what?!)
+    """
     """
     @web_authenticated
     def get(self):
-        """Renders a template with our links listed
+        """Renders a JSON list of link data
         """
-        items_qs = load_listitems(self.db_conn, self.current_user._id)
+        items_qs = load_listitems(self.db_conn, self.current_user.id)
         items_qs.sort('updated_at', direction=pymongo.DESCENDING)
         num_items = items_qs.count()
         
@@ -263,7 +316,87 @@ class APIListDisplayHandler(BaseHandler):
     
     @web_authenticated
     def post(self):
-        """Renders a template with our links listed
+        """Same as `get()`
         """
         return self.get()
+
+
+###
+### Settings Handlers
+###
+
+class SettingsHandler(BaseHandler, Jinja2Rendering):
+    """
+    """
+    @web_authenticated
+    def get(self):
+        """
+        """
+        # Load user's profile, if available.
+        up_dict = self.current_userprofile.to_python()
+
+        # Generate profile form elements
+        hidden_fields = ['username', 'created_at', 'updated_at']
+        form_fields =  userprofile_form(skip_fields=hidden_fields,
+                                        values=up_dict)
+
+        context = {
+            'form_fields': form_fields,
+        }
+        return self.render_template('settings/edit.html', **context)
+
+    @web_authenticated
+    def post(self):
+        """
+        """
+        new_profile = self.current_userprofile.to_python()
+
+        # Apply each argument we accept to the new structure
+        new_profile['website'] = self.get_argument('website', None)
+        new_profile['name'] = self.get_argument('name', None)
+        new_profile['bio'] = self.get_argument('bio', None)
+        new_profile['location_text'] = self.get_argument('location_text', None)
+        new_profile['avatar_url'] = self.get_argument('avatar_url', None)
+        new_profile['email'] = self.get_argument('email', None)
+
+        # Save values if they pass validation
+        try:
+            new_up = UserProfile(**new_profile)
+            new_up.validate()
+            save_userprofile(self.db_conn, new_up)
+            self._current_userprofile = new_up
+        except Exception, e:
+            # TODO handle errors nicely
+            print e
+            return self.get()
+
+        return self.redirect("/" + self.current_user.username)
+
+
+###
+### Profile Handlers
+###
+
+class ProfilesHandler(BaseHandler, Jinja2Rendering):
+    """
+    """
+    def get(self, username):
+        """
+        """
+        if username == 'profile':
+            up_dict = self.current_userprofile.to_python()
+        else:
+            # Load user's profile, if available.
+            up_dict = load_userprofile(self.db_conn, username=username)
+
+        if up_dict and 'email' in up_dict and 'avatar_url' not in up_dict:
+            # ad-hoc gravatar support!
+            email = up_dict['email']
+            email_hash = md5(email).hexdigest()
+            avatar_url = 'http://www.gravatar.com/avatar/%s?s=100' % email_hash
+            up_dict['avatar_url'] = avatar_url
+
+        context = {'userprofile': up_dict}
+
+        return self.render_template('profiles/view.html', **context)
 

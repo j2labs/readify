@@ -7,26 +7,15 @@
 <div id="submit_link_fields">
   <form action="/add_item" method="post">
     <div class="forms">
-      <div class="forms_row">
-        <label class="form_label">Title</label>
-        <input class="form_value" type="text" name="title" value="{{ title }}" />
-      </div>
-      <div class="forms_row">
-        <label class="form_label">URL</label>
-        <input class="form_value" type="text" name="url" value="{{ url }}" />
-      </div>
-      <div class="forms_row">
-        <label class="form_label">Tags</label>
-        <input class="form_value" type="text" name="tags" value="{{ tags }}" />
-      </div>
-      <input type="submit" />
+      {{ form_fields }}
+      <div class="buttons"><input type="submit" /></div>
     </div>
   </form>
 </div>
 
 <div><hr></div>
 
-<p class="center">Submit links with this bookmarklet: <a href="javascript:window.location=%22http://10.0.1.2:6767/add_item?url=%22+encodeURIComponent(document.location)+%22&title=%22+encodeURIComponent(document.title)">Readification</a></p>
+<p class="center">Submit links with this bookmarklet: <a href="javascript:window.location=%22http://localhost:6767/add_item?url=%22+encodeURIComponent(document.location)+%22&title=%22+encodeURIComponent(document.title)">Readification</a></p>
 
 <pre><code></code></pre>
 

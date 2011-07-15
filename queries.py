@@ -2,7 +2,8 @@
 
 
 import pymongo
-from brubeck.models import User
+import bson
+from brubeck.models import User, UserProfile
 
 
 ###
@@ -114,6 +115,7 @@ def load_userprofile(db, username=None, uid=None):
         raise ValueError('<username> or <email> field required')
 
     userprofile_dict = db[USERPROFILE_COLLECTION].find_one(query_dict)
+    
     return userprofile_dict
 
 
@@ -121,12 +123,12 @@ def save_userprofile(db, userprofile):
     """Loads a user document from MongoDB.
     """
     userprofile_doc = userprofile.to_python()
-    upid = db[USERPROFILE_COLLECTION].insert(userprofile_doc)
-    userprofile._id = upid
+    print 'UP DOC:', userprofile_doc
+    userprofile.id = db[USERPROFILE_COLLECTION].save(userprofile_doc)
 
     apply_all_indexes(db, indexes_userprofile, USERPROFILE_COLLECTION)
 
-    return upid
+    return userprofile.id
 
 
 ###
@@ -140,11 +142,15 @@ indexes_listitem = [
 ]
     
 
-def load_listitems(db, owner=None, username=None):
+def load_listitems(db, item_id=None, owner=None, username=None):
     """Loads a user document from MongoDB.
     """
     query_dict = dict()
-    if username:
+
+    ### One of these three fields is required for the primary index
+    if item_id:
+        query_dict['_id'] = item_id
+    elif username:
         query_dict['username'] = username.lower()
     elif owner:
         query_dict['owner'] = owner
@@ -159,9 +165,37 @@ def save_listitem(db, item):
     """Loads a user document from MongoDB.
     """
     item_doc = item.to_python()
-    iid = db[LISTITEM_COLLECTION].insert(item_doc)
-    item._id = iid
+    item_id = db[LISTITEM_COLLECTION].save(item_doc)
+    item._id = item_id
 
     apply_all_indexes(db, indexes_listitem, LISTITEM_COLLECTION)
 
-    return iid
+    return item_id
+
+def update_listitem(db, owner, item_id, archived=None, liked=None,
+                    deleted=None):
+    """`archive` should be boolean
+    `like` should be boolean
+    `delete` should be boolean
+    """
+    query_dict = {
+        '_id': bson.objectid.ObjectId(unicode(item_id)), # string is given
+        'owner': owner,
+    }
+
+    # One of these fields is required
+    update_dict = dict()
+    if archived:
+        update_dict['archived'] = archived
+    elif liked:
+        print 'LIKED:', liked
+        update_dict['liked'] = liked
+    elif deleted:
+        update_dict['deleted'] = deleted
+    else:
+        return None
+
+    # TODO set updated_at
+    db[LISTITEM_COLLECTION].update(query_dict, {'$set': update_dict})
+
+    return True

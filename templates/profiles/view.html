@@ -1,0 +1,21 @@
+{% extends "site_base.html" %}
+{% block base_body %}
+
+<div id="profile_hero">
+  {% if userprofile.avatar_url %}
+  <div id="profile_avatar">
+    <img src="{{ userprofile.avatar_url }}" />
+  </div>
+  {% endif %}
+    
+  <div id="profile_stats">
+    <p>{{ userprofile.name }}<br />
+    <a href="{{ userprofile.website }}">{{ userprofile.website }}</a><br />
+    {{ userprofile.bio }}<br />
+    {{ userprofile.location_text }}<br />
+    </p>
+  </div>
+</div>
+
+{% endblock %}
+

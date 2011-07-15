@@ -229,11 +229,30 @@ div.forms_row {
     margin-top: 20px;
 }
 
-label.form_label {
+label.forms_label {
 }
 
-input.form_value {
+input.forms_value {
     width: 100%;
 }
 
+/***
+ *** Profile Display
+ ***/
+
+div#profile_hero {
+    width: 780px;
+    height: 100px;
+    background: #eee;
+}
+
+div#profile_avatar {
+    float: left;
+    width: 100px;
+    padding-right: 10px;
+}
+
+div#profile_stats {
+    padding-left: 15px;
+}
 

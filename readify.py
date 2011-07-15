@@ -11,7 +11,9 @@ from handlers import (AccountLoginHandler,
                       AccountLogoutHandler,
                       ListDisplayHandler,
                       ListAddHandler,
-                      APIListDisplayHandler)
+                      APIListDisplayHandler,
+                      SettingsHandler,
+                      ProfilesHandler)
 
 from queries import init_db_conn
 
@@ -30,6 +32,8 @@ handler_tuples = [
     (r'^/logout', AccountLogoutHandler),
     (r'^/add_item', ListAddHandler),
     (r'^/api', APIListDisplayHandler),
+    (r'^/settings', SettingsHandler),
+    (r'^/(?P<username>\w+)', ProfilesHandler),
     (r'^/$', ListDisplayHandler),
 ]
 
