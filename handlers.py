@@ -120,18 +120,16 @@ class AccountCreateHandler(BaseHandler, Jinja2Rendering):
         """
         username = self.get_argument('username')
         password = self.get_argument('password')
-        email = self.get_argument('email')
 
         try:
-            u = User.create_user(username, password, email)
+            u = User.create_user(username, password)
             u.validate()
             save_user(self.db_conn, u)
         except Exception, e:
             logging.error('Credentials failed')
             logging.error(e)
             form_fields = user_form(skip_fields=self.skip_fields,
-                                    values={'username': username,
-                                            'email': email})
+                                    values={'username': username})
             return self.render_template('accounts/create.html',
                                         form_fields=form_fields)
 
@@ -146,7 +144,7 @@ class AccountLoginHandler(BaseHandler, Jinja2Rendering):
     def get(self):
         """Offers login form to user
         """
-        skip_fields=['email', 'date_joined', 'last_login']
+        skip_fields=['date_joined', 'last_login']
         form_fields = user_form(skip_fields=skip_fields)
         return self.render_template('accounts/login.html',
                                     form_fields=form_fields)
@@ -195,7 +193,6 @@ class ListDisplayHandler(BaseHandler, Jinja2Rendering):
 
         # Simple closure to simplify updating code
         def updater(item_id, **kw):
-            print 'KW:', kw
             update_listitem(self.db_conn, self.current_user.id, item_id, **kw)
 
         # This could def be cleaner
@@ -212,7 +209,7 @@ class ListDisplayHandler(BaseHandler, Jinja2Rendering):
         """
         """
         self._handle_updates()
-
+        
         items_qs = load_listitems(self.db_conn, owner=self.current_user.id)
         items_qs.sort('updated_at', direction=pymongo.DESCENDING)
 
@@ -251,7 +248,8 @@ class ListAddHandler(BaseHandler, Jinja2Rendering):
         if title is not None:
             values['title'] = title
 
-        skip_fields = ['deleted', 'archived', 'created_at', 'updated_at']
+        skip_fields = ['deleted', 'archived', 'created_at', 'updated_at',
+                       'liked', 'username']
         form_fields = listitem_form(skip_fields=skip_fields, values=values)
         return self.render_template('linklists/item_add.html',
                                     form_fields=form_fields)

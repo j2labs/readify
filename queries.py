@@ -53,7 +53,6 @@ def apply_all_indexes(db, indexes, collection):
 USER_COLLECTION = 'users'
 indexes_user = [
     [('username', pymongo.ASCENDING)],
-    [('email', pymongo.ASCENDING)],
 ]
     
 
@@ -63,10 +62,8 @@ def load_user(db, username=None, email=None):
     query_dict = dict()
     if username:
         query_dict['username'] = '%s' % (username.lower())
-    elif email:
-        query_dict['email'] = email.lower()
     else:
-        raise ValueError('Username or email field required')
+        raise ValueError('Username field required')
 
     user_dict = db[USER_COLLECTION].find_one(query_dict)
 
