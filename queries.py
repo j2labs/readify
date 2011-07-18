@@ -120,7 +120,6 @@ def save_userprofile(db, userprofile):
     """Loads a user document from MongoDB.
     """
     userprofile_doc = userprofile.to_python()
-    print 'UP DOC:', userprofile_doc
     userprofile.id = db[USERPROFILE_COLLECTION].save(userprofile_doc)
 
     apply_all_indexes(db, indexes_userprofile, USERPROFILE_COLLECTION)
@@ -153,6 +152,9 @@ def load_listitems(db, item_id=None, owner=None, username=None):
         query_dict['owner'] = owner
     else:
         raise ValueError('<owner> or <username> field required')
+
+    query_dict['archived'] = False
+    query_dict['deleted'] = False
 
     query_set = db[LISTITEM_COLLECTION].find(query_dict)
     return query_set

@@ -29,9 +29,9 @@ class ListItem(Document):
     updated_at = MillisecondField()
 
     # status fields
-    liked = BooleanField()
-    deleted = BooleanField()
-    archived = BooleanField()
+    liked = BooleanField(default=False)
+    deleted = BooleanField(default=False)
+    archived = BooleanField(default=False)
 
     url = URLField(required=True)
     title = StringField(required=True)
