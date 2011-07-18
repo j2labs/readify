@@ -182,12 +182,11 @@ def update_listitem(db, owner, item_id, archived=None, liked=None,
 
     # One of these fields is required
     update_dict = dict()
-    if archived:
+    if archived is not None:
         update_dict['archived'] = archived
-    elif liked:
-        print 'LIKED:', liked
+    elif liked is not None:
         update_dict['liked'] = liked
-    elif deleted:
+    elif deleted is not None:
         update_dict['deleted'] = deleted
     else:
         return None
