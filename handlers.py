@@ -171,7 +171,7 @@ class AccountLogoutHandler(BaseHandler, Jinja2Rendering):
         """Clears cookie and sends user to login page
         """
         self.delete_cookies()
-        return self.redirect('/login')
+        return self.redirect(self.login_url)
 
 
 ###
