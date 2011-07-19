@@ -178,11 +178,12 @@ class AccountLogoutHandler(BaseHandler, Jinja2Rendering):
 ### Link List Handlers
 ###
 
-class ListDisplayHandler(BaseHandler, Jinja2Rendering):
-    """A link listserv (what?!)
+class ListHandlerBase(BaseHandler, Jinja2Rendering):
+    """Base handler for list handlers that provides some commonly needed
+    functions.
     """
     def _handle_updates(self):
-        """Accepts a URL argument and saves it to the database
+        """I'm not a huge fan of how this works yet. Got any ideas?
         """
         archive = self.get_argument('archive', None)
         unarchive = self.get_argument('unarchive', None)
@@ -203,18 +204,11 @@ class ListDisplayHandler(BaseHandler, Jinja2Rendering):
         elif delete: updater(delete, deleted=True)
         elif undelete: updater(undelete, deleted=False)
 
-
-    @web_authenticated
-    def get(self):
-        """
-        """
-        self._handle_updates()
-        
-        items_qs = load_listitems(self.db_conn, owner=self.current_user.id)
-        items_qs.sort('updated_at', direction=pymongo.DESCENDING)
+    def _prepare_items(self, query_set, sort_field='updated_at'):
+        query_set.sort(sort_field, direction=pymongo.DESCENDING)
 
         items = []
-        for i in items_qs:
+        for i in query_set:
             item_id = i['_id']
             item = ListItem.make_ownersafe(i)
             
@@ -225,6 +219,53 @@ class ListDisplayHandler(BaseHandler, Jinja2Rendering):
             item['id'] = item_id
             items.append(item)
 
+        return items
+
+
+class DashboardDisplayHandler(ListHandlerBase):
+    @web_authenticated
+    def get(self):
+        """
+        """
+        self._handle_updates()
+        
+        items_qs = load_listitems(self.db_conn, owner=self.current_user.id)
+        items = self._prepare_items(items_qs)
+
+        context = {
+            'links': items,
+        }
+        return self.render_template('linklists/link_list.html', **context)
+
+
+class ArchivedDisplayHandler(ListHandlerBase):
+    @web_authenticated
+    def get(self):
+        """
+        """
+        self._handle_updates()
+        
+        items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
+                                  archived=True)
+        items = self._prepare_items(items_qs)
+        
+        context = {
+            'links': items,
+        }
+        return self.render_template('linklists/link_list.html', **context)
+
+
+class LikedDisplayHandler(ListHandlerBase):
+    @web_authenticated
+    def get(self):
+        """
+        """
+        self._handle_updates()
+        
+        items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
+                                  liked=True)
+        items = self._prepare_items(items_qs)
+        
         context = {
             'links': items,
         }
@@ -262,6 +303,7 @@ class ListAddHandler(BaseHandler, Jinja2Rendering):
         url = self.get_argument('url')
         tags = self.get_argument('tags')
 
+        # TODO The URLField should probably handle this somehow
         if not url.startswith('http'):
             url = 'http://%s' % (url)
 

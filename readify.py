@@ -9,7 +9,9 @@ from brubeck.templating import load_jinja2_env
 from handlers import (AccountLoginHandler,
                       AccountCreateHandler,
                       AccountLogoutHandler,
-                      ListDisplayHandler,
+                      DashboardDisplayHandler,
+                      LikedDisplayHandler,
+                      ArchivedDisplayHandler,
                       ListAddHandler,
                       APIListDisplayHandler,
                       SettingsHandler,
@@ -33,8 +35,10 @@ handler_tuples = [
     (r'^/add_item', ListAddHandler),
     (r'^/api', APIListDisplayHandler),
     (r'^/settings', SettingsHandler),
+    (r'^/archived', ArchivedDisplayHandler),
+    (r'^/liked', LikedDisplayHandler),
     (r'^/(?P<username>\w+)', ProfilesHandler),
-    (r'^/$', ListDisplayHandler),
+    (r'^/$', DashboardDisplayHandler),
 ]
 
 # Application config
