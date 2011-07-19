@@ -138,7 +138,7 @@ indexes_listitem = [
 ]
     
 
-def load_listitems(db, item_id=None, owner=None, username=None, archived=false,
+def load_listitems(db, item_id=None, owner=None, username=None, archived=False,
                    deleted=False, liked=None):
     """Loads a user document from MongoDB.
     """
