@@ -138,7 +138,8 @@ indexes_listitem = [
 ]
     
 
-def load_listitems(db, item_id=None, owner=None, username=None):
+def load_listitems(db, item_id=None, owner=None, username=None, archived=false,
+                   deleted=False, liked=None):
     """Loads a user document from MongoDB.
     """
     query_dict = dict()
@@ -153,8 +154,9 @@ def load_listitems(db, item_id=None, owner=None, username=None):
     else:
         raise ValueError('<owner> or <username> field required')
 
-    query_dict['archived'] = False
-    query_dict['deleted'] = False
+    query_dict['archived'] = archived
+    query_dict['deleted'] = deleted
+    query_dict['liked'] = liked
 
     query_set = db[LISTITEM_COLLECTION].find(query_dict)
     return query_set
