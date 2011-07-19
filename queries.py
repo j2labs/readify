@@ -154,9 +154,13 @@ def load_listitems(db, item_id=None, owner=None, username=None, archived=False,
     else:
         raise ValueError('<owner> or <username> field required')
 
+    # archived & deleted dictate which page sees what
     query_dict['archived'] = archived
     query_dict['deleted'] = deleted
-    query_dict['liked'] = liked
+
+    # liked is present on most lists, thus it's use isn't mandatory
+    if liked is not None:
+        query_dict['liked'] = liked
 
     query_set = db[LISTITEM_COLLECTION].find(query_dict)
     return query_set
