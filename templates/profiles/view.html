@@ -7,7 +7,7 @@
     <img src="{{ userprofile.avatar_url }}" />
   </div>
   {% endif %}
-    
+
   <div id="profile_stats">
     <p>{{ userprofile.name }}<br />
     <a href="{{ userprofile.website }}">{{ userprofile.website }}</a><br />
@@ -16,6 +16,29 @@
     </p>
   </div>
 </div>
+
+  {% for link in links %}
+
+  {% if not loop.first %}
+  <div class="link_splitter"><hr></div>
+  {% endif %}
+  
+  <div class="link_container">
+    <div class="link_title">
+      <a href="{{ link.url }}">{{ link.title }}</a>
+    </div>
+    <div class="link_bar">
+      <li class="link_buttons">[ 
+        <a href="?save_link={{ link.id }}" class="button">save</a>
+      ]</li>
+      <li class="link_found"><strong>F</strong>: {{ link.formatted_date }}</li>
+      <li class="link_tags"><strong>T</strong>: {% if link.tags %}{% for tag in link.tags %}{% if not loop.first %}, {% endif %}<a href="?tag={{ tag }}">{{ tag }}</a>{% endfor %}{% endif %}</li>
+    </div>
+  </div>
+
+  {% set is_first = False -%}
+  {% endfor %}
+
 
 {% endblock %}
 

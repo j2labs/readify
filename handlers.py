@@ -182,7 +182,7 @@ class ListHandlerBase(BaseHandler, Jinja2Rendering):
     """Base handler for list handlers that provides some commonly needed
     functions.
     """
-    def _handle_updates(self):
+    def handle_updates(self):
         """I'm not a huge fan of how this works yet. Got any ideas?
         """
         archive = self.get_argument('archive', None)
@@ -204,7 +204,15 @@ class ListHandlerBase(BaseHandler, Jinja2Rendering):
         elif delete: updater(delete, deleted=True)
         elif undelete: updater(undelete, deleted=False)
 
-    def _prepare_items(self, query_set, sort_field='updated_at'):
+    def get_tags(self):
+        """
+        """
+        # There might be multiple tags, so use `get_arguments`
+        tags = self.get_arguments('tag', None)
+        return tags
+
+    @classmethod
+    def prepare_items(self, query_set, sort_field='updated_at'):
         query_set.sort(sort_field, direction=pymongo.DESCENDING)
 
         items = []
@@ -221,25 +229,18 @@ class ListHandlerBase(BaseHandler, Jinja2Rendering):
 
         return items
 
-    def get_tags(self):
-        """
-        """
-        # There might be multiple tags, so use `get_arguments`
-        tags = self.get_arguments('tag', None)
-        return tags
-
 
 class DashboardDisplayHandler(ListHandlerBase):
     @web_authenticated
     def get(self):
         """
         """
-        self._handle_updates()
+        self.handle_updates()
         tags = self.get_tags()
         
         items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
                                   tags=tags)
-        items = self._prepare_items(items_qs)
+        items = ListHandlerBase.prepare_items(items_qs)
 
         context = {
             'links': items,
@@ -252,12 +253,12 @@ class ArchivedDisplayHandler(ListHandlerBase):
     def get(self):
         """
         """
-        self._handle_updates()
+        self.handle_updates()
         tags = self.get_tags()
         
         items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
                                   archived=True, tags=tags)
-        items = self._prepare_items(items_qs)
+        items = ListHandlerBase.prepare_items(items_qs)
         
         context = {
             'links': items,
@@ -270,12 +271,12 @@ class LikedDisplayHandler(ListHandlerBase):
     def get(self):
         """
         """
-        self._handle_updates()
+        self.handle_updates()
         tags = self.get_tags()
         
         items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
                                   liked=True, tags=tags)
-        items = self._prepare_items(items_qs)
+        items = ListHandlerBase.prepare_items(items_qs)
         
         context = {
             'links': items,
@@ -431,6 +432,7 @@ class ProfilesHandler(BaseHandler, Jinja2Rendering):
         """
         if username == 'profile':
             up_dict = self.current_userprofile.to_python()
+            username = self.current_user.username
         else:
             # Load user's profile, if available.
             up_dict = load_userprofile(self.db_conn, username=username)
@@ -442,7 +444,13 @@ class ProfilesHandler(BaseHandler, Jinja2Rendering):
             avatar_url = 'http://www.gravatar.com/avatar/%s?s=100' % email_hash
             up_dict['avatar_url'] = avatar_url
 
-        context = {'userprofile': up_dict}
+        user_links = load_listitems(self.db_conn, username=username)
+        user_links = ListHandlerBase.prepare_items(user_links)
+
+        context = {
+            'userprofile': up_dict,
+            'links': user_links,
+        }
 
         return self.render_template('profiles/view.html', **context)
 
