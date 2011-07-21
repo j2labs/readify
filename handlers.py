@@ -221,6 +221,13 @@ class ListHandlerBase(BaseHandler, Jinja2Rendering):
 
         return items
 
+    def get_tags(self):
+        """
+        """
+        # There might be multiple tags, so use `get_arguments`
+        tags = self.get_arguments('tag', None)
+        return tags
+
 
 class DashboardDisplayHandler(ListHandlerBase):
     @web_authenticated
@@ -228,8 +235,10 @@ class DashboardDisplayHandler(ListHandlerBase):
         """
         """
         self._handle_updates()
+        tags = self.get_tags()
         
-        items_qs = load_listitems(self.db_conn, owner=self.current_user.id)
+        items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
+                                  tags=tags)
         items = self._prepare_items(items_qs)
 
         context = {
@@ -244,9 +253,10 @@ class ArchivedDisplayHandler(ListHandlerBase):
         """
         """
         self._handle_updates()
+        tags = self.get_tags()
         
         items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
-                                  archived=True)
+                                  archived=True, tags=tags)
         items = self._prepare_items(items_qs)
         
         context = {
@@ -261,9 +271,10 @@ class LikedDisplayHandler(ListHandlerBase):
         """
         """
         self._handle_updates()
+        tags = self.get_tags()
         
         items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
-                                  liked=True)
+                                  liked=True, tags=tags)
         items = self._prepare_items(items_qs)
         
         context = {
@@ -301,7 +312,6 @@ class ListAddHandler(BaseHandler, Jinja2Rendering):
         """
         title = self.get_argument('title')
         url = self.get_argument('url')
-        tags = self.get_argument('tags')
 
         # TODO The URLField should probably handle this somehow
         if not url.startswith('http'):
@@ -317,10 +327,6 @@ class ListAddHandler(BaseHandler, Jinja2Rendering):
             'url': url,
         }
 
-        if tags:
-            tag_list = tags.split(',')
-            link_item['tags'] = tag_list
-            
         item = ListItem(**link_item)
         try:
             item.validate()

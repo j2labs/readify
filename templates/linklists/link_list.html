@@ -37,7 +37,7 @@
         {% endif %}
       ]</li>
       <li class="link_found"><strong>F</strong>: {{ link.formatted_date }}</li>
-      <li class="link_tags"><strong>T</strong>: {% if link.tags %}{% for tag in link.tags %}{% if not loop.first %}, {% endif %}<a href="">{{ tag }}</a>{% endfor %}{% endif %}</li>
+      <li class="link_tags"><strong>T</strong>: {% if link.tags %}{% for tag in link.tags %}{% if not loop.first %}, {% endif %}<a href="?tag={{ tag }}">{{ tag }}</a>{% endfor %}{% endif %}</li>
     </div>
   </div>
 

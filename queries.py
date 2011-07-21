@@ -139,7 +139,7 @@ indexes_listitem = [
     
 
 def load_listitems(db, item_id=None, owner=None, username=None, archived=False,
-                   deleted=False, liked=None):
+                   deleted=False, liked=None, tags=None):
     """Loads a user document from MongoDB.
     """
     query_dict = dict()
@@ -162,9 +162,11 @@ def load_listitems(db, item_id=None, owner=None, username=None, archived=False,
     if liked is not None:
         query_dict['liked'] = liked
 
+    if tags is not None:
+        query_dict['tags'] = {'$all': tags}
+
     query_set = db[LISTITEM_COLLECTION].find(query_dict)
     return query_set
-
 
 def save_listitem(db, item):
     """Loads a user document from MongoDB.
