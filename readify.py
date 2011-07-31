@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 
 
-import logging
-
 from brubeck.request_handling import Brubeck
 from brubeck.templating import load_jinja2_env
 
@@ -18,6 +16,8 @@ from handlers import (AccountLoginHandler,
                       ProfilesHandler)
 
 from queries import init_db_conn
+
+import logging
 
 
 ###
