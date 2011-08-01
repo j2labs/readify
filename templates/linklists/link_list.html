@@ -16,20 +16,20 @@
     </div>
     <div class="link_bar">
       <li class="link_buttons">[ 
-        {% if link.archived %}
-          <a href="?unarchive={{ link.id }}" class="button">unarchive</a> |
-        {% else %}
-          <a href="?archive={{ link.id }}" class="button">archive</a> |
-        {% endif %}
-          
         {% if link.liked %}
           <a href="?unlike={{ link.id }}" class="button">unlike</a> | 
         {% else %}
           <a href="?like={{ link.id }}" class="button">like</a> | 
         {% endif %}
   
+        {% if link.archived %}
+          <a href="?unarchive={{ link.id }}" class="button">unarchive</a> |
+        {% else %}
+          <a href="?archive={{ link.id }}" class="button">archive</a> |
+        {% endif %}
+
         <a href="/discuss/{{ link.id }}" class="button">discuss</a> | 
-  
+
         {% if link.deleted %}
           <a href="?undelete={{ link.id }}" class="button">undelete</a>
         {% else %}
