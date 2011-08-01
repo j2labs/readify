@@ -154,15 +154,14 @@ def load_listitems(db, item_id=None, owner=None, username=None, archived=False,
     else:
         raise ValueError('<owner> or <username> field required')
 
-    # archived & deleted dictate which page sees what
-    query_dict['archived'] = archived
-    query_dict['deleted'] = deleted
-
-    # liked is present on most lists, thus it's use isn't mandatory
+    # These flags have defaults, but can be turned off with None
+    if archived is not None:
+        query_dict['archived'] = archived
+    if deleted is not None:
+        query_dict['deleted'] = deleted
     if liked is not None:
         query_dict['liked'] = liked
-
-    if tags is not None:
+    if tags is not None and isinstance(tags, list):
         query_dict['tags'] = {'$all': tags}
 
     query_set = db[LISTITEM_COLLECTION].find(query_dict)

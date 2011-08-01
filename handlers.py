@@ -444,7 +444,7 @@ class ProfilesHandler(BaseHandler, Jinja2Rendering):
             avatar_url = 'http://www.gravatar.com/avatar/%s?s=100' % email_hash
             up_dict['avatar_url'] = avatar_url
 
-        user_links = load_listitems(self.db_conn, username=username)
+        user_links = load_listitems(self.db_conn, username=username, archived=None)
         user_links = ListHandlerBase.prepare_items(user_links)
 
         context = {
