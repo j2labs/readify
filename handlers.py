@@ -313,10 +313,13 @@ class ListAddHandler(BaseHandler, Jinja2Rendering):
         """
         title = self.get_argument('title')
         url = self.get_argument('url')
+        tags = self.get_argument('tags')
 
         # TODO The URLField should probably handle this somehow
         if not url.startswith('http'):
             url = 'http://%s' % (url)
+
+        tag_list = tags.split(',')
 
         link_item = {
             'owner': self.current_user.id,
@@ -326,6 +329,7 @@ class ListAddHandler(BaseHandler, Jinja2Rendering):
 
             'title': title,
             'url': url,
+            'tags': tag_list,
         }
 
         item = ListItem(**link_item)
