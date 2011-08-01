@@ -403,12 +403,17 @@ class SettingsHandler(BaseHandler, Jinja2Rendering):
         new_profile = self.current_userprofile.to_python()
 
         # Apply each argument we accept to the new structure
-        new_profile['website'] = self.get_argument('website', None)
         new_profile['name'] = self.get_argument('name', None)
         new_profile['bio'] = self.get_argument('bio', None)
         new_profile['location_text'] = self.get_argument('location_text', None)
         new_profile['avatar_url'] = self.get_argument('avatar_url', None)
         new_profile['email'] = self.get_argument('email', None)
+
+        # Help a user out if they didn't put the "http" in front
+        website = self.get_argument('website', None)
+        if not website.startswith('http'):
+            website = 'http://%s' % (website)
+        new_profile['website'] = website
 
         # Save values if they pass validation
         try:
