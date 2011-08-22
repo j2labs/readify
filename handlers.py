@@ -349,7 +349,7 @@ class ItemAddHandler(BaseHandler, Jinja2Rendering):
 
 
 ###
-### Settings Handlers
+### User Handlers
 ###
 
 class SettingsHandler(BaseHandler, Jinja2Rendering):
@@ -404,10 +404,6 @@ class SettingsHandler(BaseHandler, Jinja2Rendering):
 
         return self.redirect("/" + self.current_user.username)
 
-
-###
-### Profile Handlers
-###
 
 class ProfilesHandler(BaseHandler, Jinja2Rendering):
     """
