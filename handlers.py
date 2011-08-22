@@ -175,7 +175,7 @@ class AccountLogoutHandler(BaseHandler, Jinja2Rendering):
 
 
 ###
-### Link List Handlers
+### List Handlers
 ###
 
 class ListHandlerBase(BaseHandler, Jinja2Rendering):
@@ -275,7 +275,7 @@ class LikedDisplayHandler(ListHandlerBase):
         tags = self.get_tags()
         
         items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
-                                  liked=True, tags=tags)
+                                  liked=True, archived=None, tags=tags)
         items = ListHandlerBase.prepare_items(items_qs)
         
         context = {
@@ -284,7 +284,11 @@ class LikedDisplayHandler(ListHandlerBase):
         return self.render_template('linklists/link_list.html', **context)
 
 
-class ListAddHandler(BaseHandler, Jinja2Rendering):
+###
+### Item Handlers
+###
+
+class ItemAddHandler(BaseHandler, Jinja2Rendering):
     """
     """
     @web_authenticated
@@ -342,34 +346,6 @@ class ListAddHandler(BaseHandler, Jinja2Rendering):
         
         save_listitem(self.db_conn, item)
         return self.redirect('/')
-
-
-class APIListDisplayHandler(BaseHandler):
-    """
-    """
-    @web_authenticated
-    def get(self):
-        """Renders a JSON list of link data
-        """
-        items_qs = load_listitems(self.db_conn, self.current_user.id)
-        items_qs.sort('updated_at', direction=pymongo.DESCENDING)
-        num_items = items_qs.count()
-        
-        items = [ListItem.make_ownersafe(i) for i in items_qs]
-
-        data = {
-            'num_items': num_items,
-            'items': items,
-        }
-
-        self.set_body(json.dumps(data))
-        return self.render(status_code=200)
-    
-    @web_authenticated
-    def post(self):
-        """Same as `get()`
-        """
-        return self.get()
 
 
 ###
@@ -463,3 +439,34 @@ class ProfilesHandler(BaseHandler, Jinja2Rendering):
 
         return self.render_template('profiles/view.html', **context)
 
+
+###
+### List API
+###
+
+class APIListDisplayHandler(BaseHandler):
+    """
+    """
+    @web_authenticated
+    def get(self):
+        """Renders a JSON list of link data
+        """
+        items_qs = load_listitems(self.db_conn, self.current_user.id)
+        items_qs.sort('updated_at', direction=pymongo.DESCENDING)
+        num_items = items_qs.count()
+        
+        items = [ListItem.make_ownersafe(i) for i in items_qs]
+
+        data = {
+            'num_items': num_items,
+            'items': items,
+        }
+
+        self.set_body(json.dumps(data))
+        return self.render(status_code=200)
+    
+    @web_authenticated
+    def post(self):
+        """Same as `get()`
+        """
+        return self.get()

@@ -1,0 +1,19 @@
+{% extends "site_base.html" %}
+
+{% block page_title %}Edit Link{% endblock %}
+
+{% block site_body %}
+
+<div id="submit_link_fields">
+  <form action="/edit_item" method="post">
+    <div class="forms">
+      {{ form_fields }}
+      <div class="buttons"><input type="submit" /></div>
+    </div>
+  </form>
+</div>
+
+<div><hr></div>
+
+{% endblock %}
+
