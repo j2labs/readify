@@ -13,7 +13,7 @@ from brubeck.request_handling import WebMessageHandler
 from brubeck.templating import Jinja2Rendering
 from brubeck.timekeeping import millis_to_datetime, prettydate
 
-from models import ListItem
+from models import ListItem, ObjectIdField
 from queries import (load_user,
                      save_user,
                      load_listitems,
@@ -233,7 +233,9 @@ class ListHandlerBase(BaseHandler, Jinja2Rendering):
 class DashboardDisplayHandler(ListHandlerBase):
     @web_authenticated
     def get(self):
-        """
+        """A list display matching the parameters of a user's dashboard. The
+        parameters essentially map to the variation in how `load_listitems` is
+        called.
         """
         self.handle_updates()
         tags = self.get_tags()
@@ -251,7 +253,8 @@ class DashboardDisplayHandler(ListHandlerBase):
 class ArchivedDisplayHandler(ListHandlerBase):
     @web_authenticated
     def get(self):
-        """
+        """A list display matching the parameters of a user's archive with
+        respect to `load_listitems`.
         """
         self.handle_updates()
         tags = self.get_tags()
@@ -269,7 +272,8 @@ class ArchivedDisplayHandler(ListHandlerBase):
 class LikedDisplayHandler(ListHandlerBase):
     @web_authenticated
     def get(self):
-        """
+        """A list display matching the parameters of a user's liked items list
+        with respect to `load_listitems`.
         """
         self.handle_updates()
         tags = self.get_tags()
@@ -308,7 +312,7 @@ class ItemAddHandler(BaseHandler, Jinja2Rendering):
         skip_fields = ['deleted', 'archived', 'created_at', 'updated_at',
                        'liked', 'username']
         form_fields = listitem_form(skip_fields=skip_fields, values=values)
-        return self.render_template('linklists/item_add.html',
+        return self.render_template('linklists/item_submit.html',
                                     form_fields=form_fields)
 
     @web_authenticated
@@ -337,6 +341,74 @@ class ItemAddHandler(BaseHandler, Jinja2Rendering):
         }
 
         item = ListItem(**link_item)
+        try:
+            item.validate()
+        except Exception, e:
+            logging.error('Item validatiom failed')
+            logging.error(e)
+            return self.render_error(500)
+        
+        save_listitem(self.db_conn, item)
+        return self.redirect('/')
+
+
+class ItemEditHandler(BaseHandler, Jinja2Rendering):
+    """
+    """
+    def _load_item(self, owner, item_id):
+        """Helper for loading a single item, if `item_id` is good.
+        """
+        if item_id:
+            try:
+                item_id = ObjectIdField().to_python(item_id)
+            except:
+                return None
+        
+        item_qs = load_listitems(self.db_conn, owner=self.current_user.id,
+                                 item_id=item_id)
+
+        items = list(item_qs)
+        if len(items) != 1:
+            return None
+        else:
+            item = items[0]
+
+        return item
+
+    @web_authenticated
+    def get(self, item_id):
+        """Renders a template with link info for editing stored data
+        """
+        item = self._load_item(self.current_user.id, item_id)
+
+        skip_fields = ['deleted', 'archived', 'created_at', 'updated_at',
+                       'liked', 'username']
+        form_fields = listitem_form(skip_fields=skip_fields, values=item)
+        return self.render_template('linklists/item_submit.html',
+                                    form_fields=form_fields)
+
+    @web_authenticated
+    def post(self, item_id):
+        """Accepts a URL argument and saves it to the database
+        """
+        item_data = self._load_item(self.current_user.id, item_id)
+        item =  ListItem(**item_data)
+
+        title = self.get_argument('title')
+        url = self.get_argument('url')
+        tags = self.get_argument('tags')
+
+        # TODO The URLField should probably handle this somehow
+        if not url.startswith('http'):
+            url = 'http://%s' % (url)
+
+        tag_list = tags.split(',')
+
+        item.updated_at = self.current_time
+        item.title = title
+        item.url = url
+        item.tags = tag_list
+
         try:
             item.validate()
         except Exception, e:
@@ -447,7 +519,7 @@ class APIListDisplayHandler(BaseHandler):
     def get(self):
         """Renders a JSON list of link data
         """
-        items_qs = load_listitems(self.db_conn, self.current_user.id)
+        items_qs = load_listitems(self.db_conn, owner=self.current_user.id)
         items_qs.sort('updated_at', direction=pymongo.DESCENDING)
         num_items = items_qs.count()
         

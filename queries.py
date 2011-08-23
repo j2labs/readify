@@ -143,14 +143,15 @@ def load_listitems(db, item_id=None, owner=None, username=None, archived=False,
     """Loads a user document from MongoDB.
     """
     query_dict = dict()
-
+ 
     ### One of these three fields is required for the primary index
-    if item_id:
-        query_dict['_id'] = item_id
-    elif username:
+    if username:
         query_dict['username'] = username.lower()
     elif owner:
         query_dict['owner'] = owner
+        # `item_id` isn't required. can be used with `owner` tho.
+        if item_id:
+            query_dict['_id'] = item_id
     else:
         raise ValueError('<owner> or <username> field required')
 

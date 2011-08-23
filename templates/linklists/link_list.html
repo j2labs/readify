@@ -31,10 +31,12 @@
         <a href="/discuss/{{ link.id }}" class="button">discuss</a> | 
 
         {% if link.deleted %}
-          <a href="?undelete={{ link.id }}" class="button">undelete</a>
+          <a href="?undelete={{ link.id }}" class="button">undelete</a> |
         {% else %}
-          <a href="?delete={{ link.id }}" class="button">delete</a>
+          <a href="?delete={{ link.id }}" class="button">delete</a> |
         {% endif %}
+
+        <a href="/edit_item/{{ link.id }}" class="button">edit</a>
       ]</li>
       <li class="link_found"><strong>F</strong>: {{ link.formatted_date }}</li>
       <li class="link_tags"><strong>T</strong>: {% if link.tags %}{% for tag in link.tags %}{% if not loop.first %}, {% endif %}<a href="?tag={{ tag }}">{{ tag }}</a>{% endfor %}{% endif %}</li>
