@@ -19,8 +19,8 @@ from brubeck.models import UserProfile
 
 class OwnedDocument(EmbeddedDocument):
     # ownable
-    owner_id = ObjectIdField(required=True)
-    owner_username = StringField(max_length=30, required=True)
+    owner = ObjectIdField(required=True)
+    username = StringField(max_length=30, required=True)
     meta = {
         'mixin': True,
     }
