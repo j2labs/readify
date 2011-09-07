@@ -1,10 +1,11 @@
 .DS_Store
+*.*~
 *.pyc
 *.bak
-*.*~
+*.log
+*.pid
 the.db
 MANIFEST
 build
 dist
 tmp
-
