@@ -105,6 +105,10 @@ Login screen.
 
 Link dashboard.
 
+![Submit link](/j2labs/readify/raw/master/img/submit.png)
+
+Submit a link.
+
 ![Liked links](/j2labs/readify/raw/master/img/liked.png)
 
 Liked links.
