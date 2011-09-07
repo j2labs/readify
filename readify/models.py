@@ -1,5 +1,5 @@
 from dictshield.base import BaseField, DictPunch
-from dictshield.document import Document
+from dictshield.document import Document, EmbeddedDocument
 from dictshield.fields import (StringField,
                                BooleanField,
                                URLField,
@@ -14,20 +14,34 @@ from brubeck.models import UserProfile
 
 
 ###
-### List Models
+### Mixin Tests
 ###
-    
-class ListItem(Document):
-    """Bare minimum to have the concept of streamed item.
-    """
-    # ownable
-    owner = ObjectIdField(required=True)
-    username = StringField(max_length=30, required=True)
 
+class OwnedDocument(EmbeddedDocument):
+    # ownable
+    owner_id = ObjectIdField(required=True)
+    owner_username = StringField(max_length=30, required=True)
+    meta = {
+        'mixin': True,
+    }
+
+
+class StreamedDocument(EmbeddedDocument):
     # streamable
     created_at = MillisecondField()
     updated_at = MillisecondField()
+    meta = {
+        'mixin': True,
+    }
 
+
+###
+### List Models
+###
+    
+class ListItem(Document, OwnedDocument, StreamedDocument):
+    """Bare minimum to have the concept of streamed item.
+    """
     # status fields
     liked = BooleanField(default=False)
     deleted = BooleanField(default=False)

@@ -8,10 +8,11 @@ import copy
 from hashlib import md5
 
 from brubeck.models import User, UserProfile
-from brubeck.auth import web_authenticated, UserHandlingMixin
+from brubeck.auth import authenticated, web_authenticated, UserHandlingMixin
 from brubeck.request_handling import WebMessageHandler
 from brubeck.templating import Jinja2Rendering
 from brubeck.timekeeping import millis_to_datetime, prettydate
+from brubeck.datamosh import PagingMixin
 
 from models import ListItem, ObjectIdField
 from queries import (load_user,
@@ -512,17 +513,24 @@ class ProfilesHandler(BaseHandler, Jinja2Rendering):
 ### List API
 ###
 
-class APIListDisplayHandler(BaseHandler):
+class APIListDisplayHandler(BaseHandler, PagingMixin):
     """
     """
-    @web_authenticated
+    @authenticated
     def get(self):
         """Renders a JSON list of link data
         """
+        # Load the owner's list of items, sorted by `updated_at`.
         items_qs = load_listitems(self.db_conn, owner=self.current_user.id)
         items_qs.sort('updated_at', direction=pymongo.DESCENDING)
         num_items = items_qs.count()
-        
+
+        # Apply paging, falling back to default values
+        (page, count) = self.get_paging_arguments()
+        items_qs.skip(page * count)
+        items_qs.limit(count)
+
+        # Generate safe list out of loaded items
         items = [ListItem.make_ownersafe(i) for i in items_qs]
 
         data = {
@@ -533,7 +541,7 @@ class APIListDisplayHandler(BaseHandler):
         self.set_body(json.dumps(data))
         return self.render(status_code=200)
     
-    @web_authenticated
+    @authenticated
     def post(self):
         """Same as `get()`
         """
