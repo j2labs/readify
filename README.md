@@ -117,7 +117,7 @@ Liked links.
 
 User profiles.
 
-![User settings](/j2labs/readify/raw/master/img/profile.png)
+![User settings](/j2labs/readify/raw/master/img/settings.png)
 
 Settings.
 
