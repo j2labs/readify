@@ -117,6 +117,6 @@ User profiles.
 
 Settings.
 
-![JSON API](/j2labs/readify/raw/master/img/profile.png)
+![JSON API](/j2labs/readify/raw/master/img/jsonfeed.png)
 
 Paginated JSON API.
