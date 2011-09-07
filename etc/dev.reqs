@@ -1,0 +1,7 @@
+Cython
+Jinja2
+eventlet
+py-bcrypt
+pymongo
+python-dateutil
+pyzmq
