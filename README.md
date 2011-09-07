@@ -97,30 +97,30 @@ saving links for later much easier.
 
 ### What It Looks Like
 
-![login screen](/j2labs/readify/raw/master/img/login.png)
+![login screen](/j2labs/readify/raw/master/screenshots/login.png)
 
 Login screen.
 
-![Dashbaord](/j2labs/readify/raw/master/img/dashboard.png)
+![Dashbaord](/j2labs/readify/raw/master/screenshots/dashboard.png)
 
 Link dashboard.
 
-![Submit link](/j2labs/readify/raw/master/img/submit.png)
+![Submit link](/j2labs/readify/raw/master/screenshots/submit.png)
 
 Submit a link.
 
-![Liked links](/j2labs/readify/raw/master/img/liked.png)
+![Liked links](/j2labs/readify/raw/master/screenshots/liked.png)
 
 Liked links.
 
-![User profile](/j2labs/readify/raw/master/img/profile.png)
+![User profile](/j2labs/readify/raw/master/screenshots/profile.png)
 
 User profiles.
 
-![User settings](/j2labs/readify/raw/master/img/settings.png)
+![User settings](/j2labs/readify/raw/master/screenshots/settings.png)
 
 Settings.
 
-![JSON API](/j2labs/readify/raw/master/img/jsonfeed.png)
+![JSON API](/j2labs/readify/raw/master/screenshots/jsonfeed.png)
 
 Paginated JSON API.
