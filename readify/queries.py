@@ -166,7 +166,7 @@ def load_listitems(db, item_id=None, owner_id=None, owner_username=None,
     if tags is not None and isinstance(tags, list):
         query_dict['tags'] = {'$all': tags}
     if updated_after is not None:
-        query_dict['updated_at'] = {'$gt': updated_after}
+        query_dict['updated_at'] = {'$gte': updated_after}
 
     query_set = db[LISTITEM_COLLECTION].find(query_dict)
     return query_set
