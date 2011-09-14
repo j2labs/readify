@@ -1,4 +1,4 @@
-from dictshield.base import BaseField
+from dictshield.base import BaseField, DictPunch
 from dictshield.document import Document, EmbeddedDocument
 from dictshield.fields import (StringField,
                                BooleanField,
@@ -9,37 +9,14 @@ from dictshield.fields import (StringField,
                                ObjectIdField)
 
 from brubeck.timekeeping import MillisecondField
-from brubeck.models import User
-from brubeck.models import UserProfile
-
-
-###
-### Mixin Tests
-###
-
-class OwnedDocument(EmbeddedDocument):
-    # ownable
-    owner = ObjectIdField(required=True)
-    username = StringField(max_length=30, required=True)
-    meta = {
-        'mixin': True,
-    }
-
-
-class StreamedDocument(EmbeddedDocument):
-    # streamable
-    created_at = MillisecondField()
-    updated_at = MillisecondField()
-    meta = {
-        'mixin': True,
-    }
+from brubeck.datamosh import OwnedModelMixin, StreamedModelMixin
 
 
 ###
 ### List Models
 ###
     
-class ListItem(Document, OwnedDocument, StreamedDocument):
+class ListItem(Document, OwnedModelMixin, StreamedModelMixin):
     """Bare minimum to have the concept of streamed item.
     """
     # status fields
@@ -52,7 +29,7 @@ class ListItem(Document, OwnedDocument, StreamedDocument):
     tags = ListField(StringField())
 
     _private_fields = [
-        'owner',
+        'owner_id',
     ]
    
     def __unicode__(self):
