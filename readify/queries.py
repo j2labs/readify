@@ -133,27 +133,28 @@ def save_userprofile(db, userprofile):
 
 LISTITEM_COLLECTION = 'listitems'
 indexes_listitem = [
-    [('owner', pymongo.ASCENDING)],
-    [('username', pymongo.ASCENDING)],
+    [('owner_id', pymongo.ASCENDING)],
+    [('owner_username', pymongo.ASCENDING)],
 ]
     
 
-def load_listitems(db, item_id=None, owner=None, username=None, archived=False,
-                   deleted=False, liked=None, tags=None):
+def load_listitems(db, item_id=None, owner_id=None, owner_username=None,
+                   archived=False, deleted=False, liked=None, tags=None,
+                   updated_after=None):
     """Loads a user document from MongoDB.
     """
     query_dict = dict()
  
     ### One of these three fields is required for the primary index
-    if username:
-        query_dict['username'] = username.lower()
-    elif owner:
-        query_dict['owner'] = owner
+    if owner_username:
+        query_dict['owner_username'] = owner_username.lower()
+    elif owner_id:
+        query_dict['owner_id'] = owner_id
         # `item_id` isn't required. can be used with `owner` tho.
         if item_id:
             query_dict['_id'] = item_id
     else:
-        raise ValueError('<owner> or <username> field required')
+        raise ValueError('<owner_id> or <owner_username> field required')
 
     # These flags have defaults, but can be turned off with None
     if archived is not None:
@@ -164,6 +165,8 @@ def load_listitems(db, item_id=None, owner=None, username=None, archived=False,
         query_dict['liked'] = liked
     if tags is not None and isinstance(tags, list):
         query_dict['tags'] = {'$all': tags}
+    if updated_after is not None:
+        query_dict['updated_at'] = {'$gt': updated_after}
 
     query_set = db[LISTITEM_COLLECTION].find(query_dict)
     return query_set
@@ -179,7 +182,7 @@ def save_listitem(db, item):
 
     return item_id
 
-def update_listitem(db, owner, item_id, archived=None, liked=None,
+def update_listitem(db, owner_id, item_id, archived=None, liked=None,
                     deleted=None):
     """`archive` should be boolean
     `like` should be boolean
@@ -187,7 +190,7 @@ def update_listitem(db, owner, item_id, archived=None, liked=None,
     """
     query_dict = {
         '_id': bson.objectid.ObjectId(unicode(item_id)), # string is given
-        'owner': owner,
+        'owner_id': owner_id,
     }
 
     # One of these fields is required
