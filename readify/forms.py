@@ -1,9 +1,8 @@
 import copy
 from dictshield.forms import Form
 
-from models import (User,
-                    UserProfile,
-                    ListItem)
+from brubeck.models import User, UserProfile
+from models import ListItem
 
 
 ###
