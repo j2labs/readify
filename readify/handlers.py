@@ -9,10 +9,10 @@ from hashlib import md5
 
 from brubeck.models import User, UserProfile
 from brubeck.auth import authenticated, web_authenticated, UserHandlingMixin
-from brubeck.request_handling import WebMessageHandler
+from brubeck.request_handling import WebMessageHandler, JSONMessageHandler
 from brubeck.templating import Jinja2Rendering
 from brubeck.timekeeping import millis_to_datetime, prettydate
-from brubeck.datamosh import PagingMixin
+from brubeck.datamosh import StreamedHandlerMixin
 
 from models import ListItem, ObjectIdField
 from queries import (load_user,
@@ -86,7 +86,7 @@ class BaseHandler(WebMessageHandler, UserHandlingMixin):
             userprofile = UserProfile(**userprofile_dict)
         else:
             up_dict = {
-                'owner': self.current_user.id,
+                'owner_id': self.current_user.id,
                 'username': self.current_user.username,
                 'created_at': self.current_time,
                 'updated_at': self.current_time,
@@ -241,7 +241,7 @@ class DashboardDisplayHandler(ListHandlerBase):
         self.handle_updates()
         tags = self.get_tags()
         
-        items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
+        items_qs = load_listitems(self.db_conn, owner_id=self.current_user.id,
                                   tags=tags)
         items = ListHandlerBase.prepare_items(items_qs)
 
@@ -260,7 +260,7 @@ class ArchivedDisplayHandler(ListHandlerBase):
         self.handle_updates()
         tags = self.get_tags()
         
-        items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
+        items_qs = load_listitems(self.db_conn, owner_id=self.current_user.id,
                                   archived=True, tags=tags)
         items = ListHandlerBase.prepare_items(items_qs)
         
@@ -279,7 +279,7 @@ class LikedDisplayHandler(ListHandlerBase):
         self.handle_updates()
         tags = self.get_tags()
         
-        items_qs = load_listitems(self.db_conn, owner=self.current_user.id,
+        items_qs = load_listitems(self.db_conn, owner_id=self.current_user.id,
                                   liked=True, archived=None, tags=tags)
         items = ListHandlerBase.prepare_items(items_qs)
         
@@ -311,7 +311,7 @@ class ItemAddHandler(BaseHandler, Jinja2Rendering):
             values['title'] = title
 
         skip_fields = ['deleted', 'archived', 'created_at', 'updated_at',
-                       'liked', 'username']
+                       'liked', 'owner_username']
         form_fields = listitem_form(skip_fields=skip_fields, values=values)
         return self.render_template('linklists/item_submit.html',
                                     form_fields=form_fields)
@@ -331,8 +331,8 @@ class ItemAddHandler(BaseHandler, Jinja2Rendering):
         tag_list = tags.split(',')
 
         link_item = {
-            'owner': self.current_user.id,
-            'username': self.current_user.username,
+            'owner_id': self.current_user.id,
+            'owner_username': self.current_user.username,
             'created_at': self.current_time,
             'updated_at': self.current_time,
 
@@ -356,7 +356,7 @@ class ItemAddHandler(BaseHandler, Jinja2Rendering):
 class ItemEditHandler(BaseHandler, Jinja2Rendering):
     """
     """
-    def _load_item(self, owner, item_id):
+    def _load_item(self, owner_id, item_id):
         """Helper for loading a single item, if `item_id` is good.
         """
         if item_id:
@@ -365,7 +365,7 @@ class ItemEditHandler(BaseHandler, Jinja2Rendering):
             except:
                 return None
         
-        item_qs = load_listitems(self.db_conn, owner=self.current_user.id,
+        item_qs = load_listitems(self.db_conn, owner_id=self.current_user.id,
                                  item_id=item_id)
 
         items = list(item_qs)
@@ -383,7 +383,7 @@ class ItemEditHandler(BaseHandler, Jinja2Rendering):
         item = self._load_item(self.current_user.id, item_id)
 
         skip_fields = ['deleted', 'archived', 'created_at', 'updated_at',
-                       'liked', 'username']
+                       'liked', 'owner_username']
         form_fields = listitem_form(skip_fields=skip_fields, values=item)
         return self.render_template('linklists/item_submit.html',
                                     form_fields=form_fields)
@@ -498,7 +498,8 @@ class ProfilesHandler(BaseHandler, Jinja2Rendering):
             avatar_url = 'http://www.gravatar.com/avatar/%s?s=100' % email_hash
             up_dict['avatar_url'] = avatar_url
 
-        user_links = load_listitems(self.db_conn, username=username, archived=None)
+        user_links = load_listitems(self.db_conn, owner_username=username,
+                                    archived=None)
         user_links = ListHandlerBase.prepare_items(user_links)
 
         context = {
@@ -513,24 +514,33 @@ class ProfilesHandler(BaseHandler, Jinja2Rendering):
 ### List API
 ###
 
-class APIListDisplayHandler(BaseHandler, PagingMixin):
+class JSONBaseHandler(JSONMessageHandler, BaseHandler):
+    """Merges the JSONMessageHandler and BaseHandler classes
+    """
+
+class APIListDisplayHandler(JSONBaseHandler, StreamedHandlerMixin):
     """
     """
     @authenticated
     def get(self):
         """Renders a JSON list of link data
         """
-        # Load the owner's list of items, sorted by `updated_at`.
-        items_qs = load_listitems(self.db_conn, owner=self.current_user.id)
+        ### Stream offset
+        updated_offset = self.get_stream_offset()
+
+        ### Load the owner_id's list of items, sorted by `updated_at`.
+        items_qs = load_listitems(self.db_conn, owner_id=self.current_user.id,
+                                  updated_after=updated_offset)
         items_qs.sort('updated_at', direction=pymongo.DESCENDING)
         num_items = items_qs.count()
 
-        # Apply paging, falling back to default values
-        (page, count) = self.get_paging_arguments()
-        items_qs.skip(page * count)
+        ### Page list
+        (page, count, skip) = self.get_paging_arguments()
+
+        items_qs.skip(skip)
         items_qs.limit(count)
 
-        # Generate safe list out of loaded items
+        ### Generate safe list out of loaded items
         items = [ListItem.make_ownersafe(i) for i in items_qs]
 
         data = {
@@ -538,7 +548,8 @@ class APIListDisplayHandler(BaseHandler, PagingMixin):
             'items': items,
         }
 
-        self.set_body(json.dumps(data))
+        self.add_to_payload('data', data)
+
         return self.render(status_code=200)
     
     @authenticated
