@@ -35,9 +35,6 @@ class BaseHandler(WebMessageHandler, UserHandlingMixin):
     """This Mixin provides a `get_current_user` implementation that
     validates auth against documents in mongodb.
     """
-    def prepare(self):
-        self.current_time = int(time.time() * 1000)
-
     def get_current_user(self):
         """Attempts to load user information from cookie. If that
         fails, it looks for credentials as arguments.
@@ -517,12 +514,16 @@ class ProfilesHandler(BaseHandler, Jinja2Rendering):
 class JSONBaseHandler(JSONMessageHandler, BaseHandler):
     """Merges the JSONMessageHandler and BaseHandler classes
     """
+    
 
 class APIListDisplayHandler(JSONBaseHandler, StreamedHandlerMixin):
     """
     """
-    @authenticated
     def get(self):
+        return self.post()
+    
+    @authenticated
+    def post(self):
         """Renders a JSON list of link data
         """
         ### Stream offset
@@ -552,8 +553,3 @@ class APIListDisplayHandler(JSONBaseHandler, StreamedHandlerMixin):
 
         return self.render(status_code=200)
     
-    @authenticated
-    def post(self):
-        """Same as `get()`
-        """
-        return self.get()
