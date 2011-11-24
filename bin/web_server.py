@@ -5,15 +5,15 @@ from brubeck.request_handling import Brubeck
 from brubeck.templating import load_jinja2_env
 
 from readify.handlers import (AccountLoginHandler,
-                             AccountCreateHandler,
-                             AccountLogoutHandler,
-                             DashboardDisplayHandler,
-                             LikedDisplayHandler,
-                             ArchivedDisplayHandler,
-                             ItemAddHandler,
-                             ItemEditHandler,
-                             SettingsHandler,
-                             ProfilesHandler)
+                              AccountCreateHandler,
+                              AccountLogoutHandler,
+                              DashboardDisplayHandler,
+                              LikedDisplayHandler,
+                              ArchivedDisplayHandler,
+                              ItemAddHandler,
+                              ItemEditHandler,
+                              SettingsHandler,
+                              ProfilesHandler)
 
 from readify.queries import init_db_conn
 
