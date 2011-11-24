@@ -3,7 +3,8 @@
 
 import pymongo
 import bson
-from brubeck.models import User, UserProfile
+
+from models import User, UserProfile
 
 
 ###

@@ -7,14 +7,16 @@ import json
 import copy
 from hashlib import md5
 
-from brubeck.models import User, UserProfile
 from brubeck.auth import authenticated, web_authenticated, UserHandlingMixin
 from brubeck.request_handling import WebMessageHandler, JSONMessageHandler
 from brubeck.templating import Jinja2Rendering
 from brubeck.timekeeping import millis_to_datetime, prettydate
 from brubeck.datamosh import StreamedHandlerMixin
 
-from models import ListItem, ObjectIdField
+from models import (User,
+                    UserProfile,
+                    ListItem,
+                    ObjectIdField)
 from queries import (load_user,
                      save_user,
                      load_listitems,
@@ -84,7 +86,7 @@ class BaseHandler(WebMessageHandler, UserHandlingMixin):
         else:
             up_dict = {
                 'owner_id': self.current_user.id,
-                'username': self.current_user.username,
+                'owner_username': self.current_user.username,
                 'created_at': self.current_time,
                 'updated_at': self.current_time,
             }
@@ -433,7 +435,7 @@ class SettingsHandler(BaseHandler, Jinja2Rendering):
         up_dict = self.current_userprofile.to_python()
 
         # Generate profile form elements
-        hidden_fields = ['username', 'created_at', 'updated_at']
+        hidden_fields = ['owner_username', 'created_at', 'updated_at']
         form_fields =  userprofile_form(skip_fields=hidden_fields,
                                         values=up_dict)
 
@@ -464,13 +466,14 @@ class SettingsHandler(BaseHandler, Jinja2Rendering):
         # Save values if they pass validation
         try:
             new_up = UserProfile(**new_profile)
+            print 'PF:', new_up.to_python()
+            print 'ID:', new_up.owner_id
             new_up.validate()
             save_userprofile(self.db_conn, new_up)
             self._current_userprofile = new_up
         except Exception, e:
             # TODO handle errors nicely
-            print e
-            return self.get()
+            raise
 
         return self.redirect("/" + self.current_user.username)
 

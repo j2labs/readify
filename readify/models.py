@@ -1,15 +1,29 @@
-from dictshield.base import BaseField, DictPunch
+from dictshield.base import ShieldException
 from dictshield.document import Document, EmbeddedDocument
 from dictshield.fields import (StringField,
                                BooleanField,
                                URLField,
                                EmailField,
                                LongField,
-                               ListField,
-                               ObjectIdField)
+                               ListField)
+from dictshield.fields.mongo import ObjectIdField
 
 from brubeck.timekeeping import MillisecondField
 from brubeck.datamosh import OwnedModelMixin, StreamedModelMixin
+
+from brubeck.models import User, UserProfile
+
+###
+### Override the id fields to be ObjectIdFields
+###
+
+class User(User):
+    id = ObjectIdField()
+
+class UserProfile(UserProfile):
+    id = ObjectIdField()
+    owner_id = ObjectIdField()
+
 
 
 ###
