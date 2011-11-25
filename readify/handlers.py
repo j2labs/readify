@@ -79,7 +79,7 @@ class BaseHandler(WebMessageHandler, UserHandlingMixin):
         If no profile is found it prepares a blank one.
         """
         userprofile_dict = load_userprofile(self.db_conn,
-                                            uid=self.current_user.id)
+                                            owner_id=self.current_user.id)
 
         if userprofile_dict:
             userprofile = UserProfile(**userprofile_dict)
@@ -327,7 +327,9 @@ class ItemAddHandler(BaseHandler, Jinja2Rendering):
         if not url.startswith('http'):
             url = 'http://%s' % (url)
 
-        tag_list = tags.split(',')
+        tag_list = None
+        if tags:
+            tag_list = tags.split(',')
 
         link_item = {
             'owner_id': self.current_user.id,
@@ -341,13 +343,14 @@ class ItemAddHandler(BaseHandler, Jinja2Rendering):
         }
 
         item = ListItem(**link_item)
+
         try:
             item.validate()
         except Exception, e:
             logging.error('Item validatiom failed')
             logging.error(e)
             return self.render_error(500)
-        
+
         save_listitem(self.db_conn, item)
         return self.redirect('/')
 
@@ -466,8 +469,6 @@ class SettingsHandler(BaseHandler, Jinja2Rendering):
         # Save values if they pass validation
         try:
             new_up = UserProfile(**new_profile)
-            print 'PF:', new_up.to_python()
-            print 'ID:', new_up.owner_id
             new_up.validate()
             save_userprofile(self.db_conn, new_up)
             self._current_userprofile = new_up
@@ -489,7 +490,7 @@ class ProfilesHandler(BaseHandler, Jinja2Rendering):
             username = self.current_user.username
         else:
             # Load user's profile, if available.
-            up_dict = load_userprofile(self.db_conn, username=username)
+            up_dict = load_userprofile(self.db_conn, owner_username=username)
 
         if up_dict and 'email' in up_dict and 'avatar_url' not in up_dict:
             # ad-hoc gravatar support!

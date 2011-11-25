@@ -96,21 +96,21 @@ def save_user(db, user):
 
 USERPROFILE_COLLECTION = 'userprofiles'
 indexes_userprofile = [
-    [('owner', pymongo.ASCENDING)],
-    [('username', pymongo.ASCENDING)],
+    [('owner_id', pymongo.ASCENDING)],
+    [('owner_username', pymongo.ASCENDING)],
 ]
     
 
-def load_userprofile(db, username=None, uid=None):
+def load_userprofile(db, owner_username=None, owner_id=None):
     """Loads a user document from MongoDB.
     """
     query_dict = dict()
-    if username:
-        query_dict['username'] = username.lower()
-    elif uid:
-        query_dict['owner'] = uid
+    if owner_username:
+        query_dict['owner_username'] = owner_username.lower()
+    elif owner_id:
+        query_dict['owner_id'] = owner_id
     else:
-        raise ValueError('<username> or <email> field required')
+        raise ValueError('<owner_username> or <owner_id> field required')
 
     userprofile_dict = db[USERPROFILE_COLLECTION].find_one(query_dict)
     

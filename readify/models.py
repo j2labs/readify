@@ -6,24 +6,22 @@ from dictshield.fields import (StringField,
                                EmailField,
                                LongField,
                                ListField)
-from dictshield.fields.mongo import ObjectIdField
 
 from brubeck.timekeeping import MillisecondField
 from brubeck.datamosh import OwnedModelMixin, StreamedModelMixin
 
 from brubeck.models import User, UserProfile
 
+# We're going to use ObjectIds for the id fields
+from dictshield.fields.mongo import ObjectIdField
+from dictshield.document import swap_field 
+
 ###
 ### Override the id fields to be ObjectIdFields
 ###
 
-class User(User):
-    id = ObjectIdField()
-
-class UserProfile(UserProfile):
-    id = ObjectIdField()
-    owner_id = ObjectIdField()
-
+User = swap_field(User, ObjectIdField, ['id'])
+UserProfile = swap_field(UserProfile, ObjectIdField, ['id', 'owner_id'])
 
 
 ###
@@ -48,3 +46,7 @@ class ListItem(Document, OwnedModelMixin, StreamedModelMixin):
    
     def __unicode__(self):
         return u'%s' % (self.url)
+
+ListItem = swap_field(ListItem, ObjectIdField, ['id', 'owner_id'])
+    
+  
