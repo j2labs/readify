@@ -58,7 +58,7 @@ def listitem_form(**kwargs):
     """Listitem forms! Party time! Excellent!
     """
     # Tags must be joined back into a comma-delimited string
-    if 'values' in kwargs and 'tags' in kwargs['values']:
+    if 'values' in kwargs and kwargs['values'] and 'tags' in kwargs['values']:
         kwargs['values']['tags'] = ','.join(kwargs['values']['tags'])
 
     return gen_doc_as_div(ListItem, **kwargs)
