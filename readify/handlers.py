@@ -363,7 +363,7 @@ class ItemEditHandler(BaseHandler, Jinja2Rendering):
         """
         if item_id:
             try:
-                item_id = ObjectIdField().to_python(item_id)
+                item_id = ObjectIdField().for_python(item_id)
             except:
                 return None
         
@@ -418,7 +418,7 @@ class ItemEditHandler(BaseHandler, Jinja2Rendering):
             logging.error('Item validatiom failed')
             logging.error(e)
             return self.render_error(500)
-        
+
         save_listitem(self.db_conn, item)
         return self.redirect('/')
 
