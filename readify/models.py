@@ -4,32 +4,32 @@ from dictshield.fields import (StringField,
                                BooleanField,
                                URLField,
                                EmailField,
-                               LongField,
-                               ListField)
+                               LongField)
+from dictshield.fields.compound import ListField
+
 
 from brubeck.timekeeping import MillisecondField
 from brubeck.datamosh import OwnedModelMixin, StreamedModelMixin
-
 from brubeck.models import User, UserProfile
+
 
 # We're going to use ObjectIds for the id fields
 from dictshield.fields.mongo import ObjectIdField
-from dictshield.document import diff_id_field
+from dictshield.document import swap_field
 
 
 ###
 ### Override the id fields to be ObjectIdFields
 ###
 
-User = diff_id_field(ObjectIdField, ['id'], User)
-UserProfile = diff_id_field(ObjectIdField, ['id', 'owner_id'], UserProfile)
+User = swap_field(User, ObjectIdField, ['id'])
+UserProfile = swap_field(UserProfile, ObjectIdField, ['id', 'owner_id'])
 
 
 ###
 ### List Models
 ###
 
-@diff_id_field(ObjectIdField, ['id', 'owner_id'])
 class ListItem(Document, OwnedModelMixin, StreamedModelMixin):
     """Bare minimum to have the concept of streamed item.
     """
@@ -41,6 +41,9 @@ class ListItem(Document, OwnedModelMixin, StreamedModelMixin):
     url = URLField(required=True)
     title = StringField(required=True)
     tags = ListField(StringField())
+
+    class Meta:
+        id_field = ObjectIdField
 
     _private_fields = [
         'owner_id',
