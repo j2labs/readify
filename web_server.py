@@ -43,7 +43,7 @@ handler_tuples = [
 
 # Application config
 config = {
-    'mongrel2_pair': ('ipc://web_send', 'ipc://web_recv'),
+    'mongrel2_pair': ('tcp://127.0.0.1:9997', 'tcp://127.0.0.1:9996'),
     'handler_tuples': handler_tuples,
     'template_loader': load_jinja2_env('./templates'),
     'db_conn': db_conn,

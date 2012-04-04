@@ -23,7 +23,7 @@ handler_tuples = [
 
 # Application config
 config = {
-    'mongrel2_pair': ('ipc://api_send', 'ipc://api_recv'),
+    'mongrel2_pair': ('tcp://127.0.0.1:9999', 'tcp://127.0.0.1:9998'),
     'handler_tuples': handler_tuples,
     'db_conn': db_conn,
     'cookie_secret': 'OMGSOOOOOSECRET',
