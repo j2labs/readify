@@ -47,13 +47,16 @@ on.
     $ m2sh start -db ./etc/the.db -every
     
 The `-every` flag says to turn on every host in Mongrel2's config.  Readify is 
-configured to support two domains: readify.brubeck.io & api.readify.brubeck.io.
+configured to support two domains: web.app & api.app.
 
 If you want to run this locally, just add these two lines to your `/etc/hosts`
 and we can fake the DNS for now.
 
-    127.0.0.1    readify.brubeck.io
-    127.0.0.1    api.readify.brubeck.io
+    127.0.0.1    web.app
+    127.0.0.1    api.app
+    
+I know this look weird, but it keeps development nice and easy when you're
+running multiple services, like an API and a web site.
 
 
 ### Readify Environment
