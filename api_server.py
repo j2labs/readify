@@ -2,6 +2,7 @@
 
 
 from brubeck.request_handling import Brubeck
+from brubeck.connections import Mongrel2Connection
 
 from readify.handlers import APIListDisplayHandler
 from readify.queries import init_db_conn
@@ -23,7 +24,7 @@ handler_tuples = [
 
 # Application config
 config = {
-    'mongrel2_pair': ('tcp://127.0.0.1:9999', 'tcp://127.0.0.1:9998'),
+    'msg_conn': Mongrel2Connection('tcp://127.0.0.1:9999', 'tcp://127.0.0.1:9998'),
     'handler_tuples': handler_tuples,
     'db_conn': db_conn,
     'cookie_secret': 'OMGSOOOOOSECRET',
