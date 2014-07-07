@@ -100,30 +100,30 @@ saving links for later much easier.
 
 ### What It Looks Like
 
-![login screen](/j2labs/readify/raw/master/screenshots/login.png)
+![login screen](https://raw.githubusercontent.com/j2labs/readify/master/screenshots/login.png)
 
 Login screen.
 
-![Dashbaord](/j2labs/readify/raw/master/screenshots/dashboard.png)
+![Dashbaord](https://raw.githubusercontent.com/j2labs/readify/master/screenshots/dashboard.png)
 
 Link dashboard.
 
-![Submit link](/j2labs/readify/raw/master/screenshots/submit.png)
+![Submit link](https://raw.githubusercontent.com/j2labs/readify/master/screenshots/submit.png)
 
 Submit a link.
 
-![Liked links](/j2labs/readify/raw/master/screenshots/liked.png)
+![Liked links](https://raw.githubusercontent.com/j2labs/readify/master/screenshots/liked.png)
 
 Liked links.
 
-![User profile](/j2labs/readify/raw/master/screenshots/profile.png)
+![User profile](https://raw.githubusercontent.com/j2labs/readify/master/screenshots/profile.png)
 
 User profiles.
 
-![User settings](/j2labs/readify/raw/master/screenshots/settings.png)
+![User settings](https://raw.githubusercontent.com/j2labs/readify/master/screenshots/settings.png)
 
 Settings.
 
-![JSON API](/j2labs/readify/raw/master/screenshots/jsonfeed.png)
+![JSON API](https://raw.githubusercontent.com/j2labs/readify/master/screenshots/jsonfeed.png)
 
 Paginated JSON API.
